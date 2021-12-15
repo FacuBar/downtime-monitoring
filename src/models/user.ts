@@ -69,7 +69,7 @@ userSchema.statics.build = (attrs: UserAttrs) => {
 };
 
 userSchema.methods.addWebsite = async function (attrs: WebsiteAttrs) {
-  this.websites!.push(attrs);
+  this.websites.push(attrs);
   return;
 };
 

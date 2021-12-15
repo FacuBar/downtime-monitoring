@@ -35,7 +35,7 @@ it('should add website to user document', async () => {
   // query created user
   const newUser = await User.findById(user._id);
   // assert required values
-  expect(newUser!.websites!.length).toEqual(2);
+  expect(newUser!.websites.length).toEqual(2);
   expect(newUser!.websites[0].notifyTo).toEqual('oscaac@gmail.com');
   expect(newUser!.websites[1].url).toEqual(
     'https://en.wikipedia.org/wiki/Oscar_Isaac'
