@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { hash } from 'bcryptjs';
+import { websiteSchema } from './website';
 
 interface UserAttrs {
   name: string;
@@ -7,17 +8,26 @@ interface UserAttrs {
   password: string;
 }
 
-interface UserModel extends mongoose.Model<UserDoc> {
-  build(attrs: UserAttrs): UserDoc;
+interface WebsiteAttrs {
+  url: string;
+  notifyTo: string;
+  notify?: boolean;
 }
 
 interface UserDoc extends mongoose.Document {
   name: string;
   email: string;
   password: string;
+  websites: WebsiteAttrs[];
+
+  addWebsite: (attrs: WebsiteAttrs) => void;
 }
 
-const userSchema = new mongoose.Schema(
+interface UserModel extends mongoose.Model<UserDoc> {
+  build(attrs: UserAttrs): UserDoc;
+}
+
+const userSchema = new mongoose.Schema<UserDoc, UserModel>(
   {
     name: {
       type: String,
@@ -32,10 +42,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    websites: [websiteSchema],
   },
   {
     toJSON: {
-      transform(doc, ret) {
+      transform(_, ret) {
         ret.id = ret._id;
         delete ret._id;
         delete ret.password;
@@ -55,6 +66,11 @@ userSchema.pre('save', async function (done) {
 
 userSchema.statics.build = (attrs: UserAttrs) => {
   return new User(attrs);
+};
+
+userSchema.methods.addWebsite = async function (attrs: WebsiteAttrs) {
+  this.websites!.push(attrs);
+  return;
 };
 
 const User = mongoose.model<UserDoc, UserModel>('User', userSchema);
