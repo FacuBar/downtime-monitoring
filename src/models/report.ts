@@ -21,10 +21,10 @@ interface ReportModel extends mongoose.Model<ReportDoc> {
   build(attrs: ReportAttrs): ReportDoc;
 }
 
-const reportSchema = new mongoose.Schema({
+const reportSchema = new mongoose.Schema<ReportDoc, ReportModel>({
   issued: {
     type: Date,
-    default: Date.now,
+    default: () => new Date(),
   },
   website: {
     type: mongoose.Schema.Types.ObjectId,

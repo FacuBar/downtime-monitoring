@@ -1,5 +1,4 @@
 import { User } from '../user';
-import { websiteSchema } from '../website';
 
 const userTest = {
   name: 'oscar isaac',
@@ -31,7 +30,6 @@ it('should add website to user document', async () => {
   user.addWebsite(websiteTest);
   user.addWebsite(websiteTest2);
   await user.save();
-
   // query created user
   const newUser = await User.findById(user._id);
   // assert required values
