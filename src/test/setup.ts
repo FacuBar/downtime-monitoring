@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 let mongo: MongoMemoryServer;
 beforeAll(async () => {
@@ -20,5 +21,24 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await mongo.stop();
-  await mongoose.connection.close();
 });
+
+const LoginCookie = async () => {
+  const payload = {
+    id: new mongoose.Types.ObjectId().toHexString(),
+    email: 'email@email.com',
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_KEY!);
+
+  const session = { jwt: token };
+
+  const sessionJSON = JSON.stringify(session);
+
+  const base64 = Buffer.from(sessionJSON).toString('base64');
+
+  // super test expects an array as response
+  return [`express:sess=:${base64}`];
+};
+
+export { LoginCookie };

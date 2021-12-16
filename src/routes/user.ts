@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { User } from '../models/user';
 import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
+import { compare } from 'bcryptjs';
+
+import { User, UserDoc } from '../models/user';
 
 const router = express.Router();
 
@@ -37,7 +39,7 @@ router.post(
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json(errors);
+      res.status(400).json({ errors: errors.array() });
       return;
     }
 
@@ -46,25 +48,63 @@ router.post(
     const user = User.build({ name, email, password });
     await user.save();
 
-    const userJwt = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      process.env.JWT_KEY!,
-      {
-        expiresIn: +process.env.JWT_EXPIRES_IN!,
-      }
-    );
-
-    req.session = {
-      jwt: userJwt,
-    };
+    setCookie(user, req);
 
     res.status(201).json(user);
   }
 );
 
-router.post('/login', async (req: Request, res: Response) => {});
+router.post(
+  '/login',
+  [body('email').notEmpty().isEmail(), body('password').notEmpty()],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ error: 'invalid credentials' });
+      return;
+    }
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(400).json({ error: 'invalid credentials' });
+      return;
+    }
+
+    const validPassword = await compare(password, user.password);
+    if (!validPassword) {
+      res.status(400).json({ error: 'invalid credentials' });
+      return;
+    }
+
+    setCookie(user, req);
+
+    res.status(200).json({});
+  }
+);
+
+router.post('/logout', (req, res) => {
+  req.session = null;
+
+  res.json({});
+});
+
+const setCookie = (user: UserDoc, req: Request) => {
+  const userJwt = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+    },
+    process.env.JWT_KEY!,
+    {
+      expiresIn: +process.env.JWT_EXPIRES_IN!,
+    }
+  );
+
+  req.session = {
+    jwt: userJwt,
+  };
+};
 
 export { router as UserRouter };
