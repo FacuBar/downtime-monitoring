@@ -9,7 +9,18 @@ router.post(
   '/register',
   [
     body('name').notEmpty().isString().withMessage('invalid name'),
-    body('email').notEmpty().isEmail().withMessage('invalid email'),
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('invalid email')
+      .custom(async (value) => {
+        const existingUser = await User.findOne({ value });
+
+        if (existingUser) {
+          throw new Error('Email already on use');
+        }
+        return true;
+      }),
     body('password')
       .trim()
       .notEmpty()
@@ -27,6 +38,7 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json(errors);
+      return;
     }
 
     const { name, email, password } = req.body;
@@ -41,7 +53,7 @@ router.post(
       },
       process.env.JWT_KEY!,
       {
-        expiresIn: process.env.JWT_EXPIRES_IN!,
+        expiresIn: +process.env.JWT_EXPIRES_IN!,
       }
     );
 
@@ -52,5 +64,7 @@ router.post(
     res.status(201).json(user);
   }
 );
+
+router.post('/login', async (req: Request, res: Response) => {});
 
 export { router as UserRouter };

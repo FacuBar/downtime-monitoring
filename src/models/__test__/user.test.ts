@@ -1,5 +1,4 @@
 import { User } from '../user';
-import { websiteSchema } from '../website';
 
 const userTest = {
   name: 'oscar isaac',

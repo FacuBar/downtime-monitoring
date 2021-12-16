@@ -9,6 +9,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  process.env.JWT_KEY = 'ads';
+  process.env.JWT_EXPIRES_IN = '30';
   const collections = await mongoose.connection.db.collections();
 
   for (let collection of collections) {

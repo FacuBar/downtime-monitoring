@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 import express from 'express';
 import cookieSession from 'cookie-session';
 
@@ -19,3 +21,5 @@ app.use('/api', UserRouter);
 app.listen(8000, () => {
   console.log('listening on port 8000');
 });
+
+export { app };
