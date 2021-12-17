@@ -8,7 +8,7 @@ import { User, UserDoc } from '../models/user';
 const router = express.Router();
 
 router.post(
-  '/register',
+  '/users',
   [
     body('name').notEmpty().isString().withMessage('invalid name'),
     body('email')
@@ -55,7 +55,7 @@ router.post(
 );
 
 router.post(
-  '/login',
+  '/users/login',
   [body('email').notEmpty().isEmail(), body('password').notEmpty()],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -84,7 +84,7 @@ router.post(
   }
 );
 
-router.post('/logout', (req, res) => {
+router.post('/users/logout', (req, res) => {
   req.session = null;
 
   res.json({});

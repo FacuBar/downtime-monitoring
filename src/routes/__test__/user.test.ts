@@ -12,7 +12,7 @@ describe('register route', () => {
     }).save();
 
     await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: 'Oscaar Isaac',
         email: 'Oscar@Isaac.com',
@@ -24,7 +24,7 @@ describe('register route', () => {
 
   test('successful registration', async () => {
     const response = await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: 'Oscaar Isaac',
         email: 'Oscar@Isaac.com',
@@ -38,7 +38,7 @@ describe('register route', () => {
 
   test('invalid requests', async () => {
     await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: 'Oscaar Isaac',
         email: 'Oscar@Isaac.com',
@@ -48,7 +48,7 @@ describe('register route', () => {
       .expect(400);
 
     await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: '',
         email: 'Oscar@Isaac.com',
@@ -58,7 +58,7 @@ describe('register route', () => {
       .expect(400);
 
     await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: 'Oscaar Isaac',
         email: 'Oscarnotanemail',
@@ -68,7 +68,7 @@ describe('register route', () => {
       .expect(400);
 
     await request(app)
-      .post('/api/register')
+      .post('/api/users')
       .send({
         name: 'Oscaar Isaac',
         email: 'oscar@isaac.com',
@@ -87,7 +87,7 @@ describe('login route', () => {
     }).save();
 
     const response = await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         email: 'oscar@isaac.com',
         password: 'password',
@@ -99,14 +99,14 @@ describe('login route', () => {
 
   test('invalid request', async () => {
     await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         password: 'password',
       })
       .expect(400);
 
     await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         email: 'invalidemail',
         password: 'password',
@@ -114,7 +114,7 @@ describe('login route', () => {
       .expect(400);
 
     await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         email: 'password',
       })
@@ -129,7 +129,7 @@ describe('login route', () => {
     }).save();
 
     await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         email: 'nottheemail@amil.com',
         password: 'password',
@@ -137,7 +137,7 @@ describe('login route', () => {
       .expect(400);
 
     await request(app)
-      .post('/api/login')
+      .post('/api/users/login')
       .send({
         email: 'email@email.com',
         password: 'notthepassword',
@@ -146,12 +146,9 @@ describe('login route', () => {
   });
 });
 
-/**
- * Tests for /api/logout
- */
 it('should delete cookie if present', async () => {
   const response = await request(app)
-    .post('/api/logout')
+    .post('/api/users/logout')
     .set('Cookie', await LoginCookie())
     .send({})
     .expect(200);
