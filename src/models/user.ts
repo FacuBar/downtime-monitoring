@@ -18,7 +18,7 @@ interface UserDoc extends mongoose.Document {
   name: string;
   email: string;
   password: string;
-  websites: WebsiteAttrs[];
+  websites: mongoose.Types.DocumentArray<WebsiteAttrs & mongoose.Document>;
 
   addWebsite: (attrs: WebsiteAttrs) => void;
 }
