@@ -6,6 +6,10 @@ const websiteSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    monitor: {
+      type: Boolean,
+      default: true,
+    },
     notify: {
       type: Boolean,
       default: true,

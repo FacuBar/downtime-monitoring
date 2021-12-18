@@ -4,6 +4,7 @@ import express from 'express';
 import cookieSession from 'cookie-session';
 
 import { UserRouter } from './routes/user';
+import { WebsiteRouter } from './routes/website';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(
 );
 
 app.use('/api', UserRouter);
+app.use('/api', WebsiteRouter);
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(8000, () => console.log(`Listening on port 8000`));

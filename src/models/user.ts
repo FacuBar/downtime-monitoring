@@ -12,6 +12,7 @@ interface WebsiteAttrs {
   url: string;
   notifyTo: string;
   notify?: boolean;
+  monitor?: boolean;
 }
 
 interface UserDoc extends mongoose.Document {
@@ -20,7 +21,7 @@ interface UserDoc extends mongoose.Document {
   password: string;
   websites: mongoose.Types.DocumentArray<WebsiteAttrs & mongoose.Document>;
 
-  addWebsite: (attrs: WebsiteAttrs) => void;
+  addWebsite: (attrs: WebsiteAttrs) => number;
 }
 
 interface UserModel extends mongoose.Model<UserDoc> {
@@ -68,9 +69,8 @@ userSchema.statics.build = (attrs: UserAttrs) => {
   return new User(attrs);
 };
 
-userSchema.methods.addWebsite = async function (attrs: WebsiteAttrs) {
-  this.websites.push(attrs);
-  return;
+userSchema.methods.addWebsite = function (attrs: WebsiteAttrs): number {
+  return this.websites.push(attrs);
 };
 
 const User = mongoose.model<UserDoc, UserModel>('User', userSchema);
