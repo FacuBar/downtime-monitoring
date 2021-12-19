@@ -16,7 +16,7 @@ router.post(
       .isEmail()
       .withMessage('invalid email')
       .custom(async (value) => {
-        const existingUser = await User.findOne({ value });
+        const existingUser = await User.findOne({ email: value });
 
         if (existingUser) {
           throw new Error('Email already on use');
