@@ -1,51 +1,91 @@
-import { CronJob } from 'cron';
+import { CronJob, timeout } from 'cron';
+import fetch from 'cross-fetch';
 
 import { User } from '../models/user';
+import { Report } from '../models/report';
+import { Emails, IEmails } from './email';
 
 let tasks: { [websiteId: string]: CronJob } = {};
+
+class Reports {
+  tasks: { [websiteId: string]: CronJob };
+  emails: IEmails;
+
+  constructor(emails: IEmails) {
+    this.tasks = {};
+    this.emails = emails;
+  }
+
+  newReportTask(website: Website): void {
+    const task = new CronJob('0 */5 * * * *', () => {
+      // add timeout to fetch
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      let statusC: number;
+
+      fetch(website.url, { signal })
+        .then((response) => {
+          statusC = response.status;
+          if (!response.ok) {
+            this.emails.notify(website);
+          }
+        })
+        .catch((e) => {
+          this.emails.notify(website);
+        })
+        .finally(async () => {
+          const report = Report.build({
+            website: website.id,
+            result: {
+              httpStatus: statusC ? statusC : -1,
+            },
+          });
+          await report.save();
+        });
+
+      setTimeout(() => {
+        controller.abort();
+      }, 1200);
+    });
+    task.start();
+    this.tasks[website.id] = task;
+  }
+
+  async loadReportTasks(): Promise<void> {
+    const websites = await User.aggregate([
+      { $unwind: '$websites' },
+      { $match: { 'websites.monitor': true } },
+      {
+        $replaceRoot: {
+          newRoot: '$websites',
+        },
+      },
+    ]);
+
+    websites.forEach((website) => {
+      this.newReportTask({
+        id: website._id.toString(),
+        url: website.url,
+        notify: website.notify,
+        notifyTo: website.notifyTo,
+      });
+    });
+  }
+
+  deleteTask(websiteId: string): void {
+    this.tasks[websiteId].stop();
+    delete tasks[websiteId];
+  }
+}
 
 interface Website {
   id: string;
   url: string;
   notify: boolean;
+  notifyTo: string;
 }
 
-const addTask = (website: Website) => {
-  const task = new CronJob('0 */10 * * * *', function () {
-    const controller = new AbortController();
-    const signal = controller.signal;
+const reports = new Reports(Emails);
 
-    fetch(website.url, { signal })
-      .then((response) => {
-        if (!response.ok) {
-          // send email
-        }
-      })
-      .catch((e) => {
-        // send email
-      });
-
-    setTimeout(() => {
-      controller.abort();
-    }, 400);
-  });
-
-  tasks[website.id] = task;
-};
-
-// it might be a more eficient way of doing this
-const loadTasks = async () => {
-  const users = await User.find({});
-
-  users.forEach((user) => {
-    user.websites!.forEach((website) => {
-      if (website.monitor) {
-        addTask(website as Website);
-      }
-    });
-  });
-};
-
-const deleteTask = (websiteId: string) => {
-  delete tasks[websiteId];
-};
+export { reports as Reports };
