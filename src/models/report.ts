@@ -1,10 +1,9 @@
 import mongoose, { Types } from 'mongoose';
 
 interface ReportAttrs {
-  website: Types.ObjectId;
+  website: string;
   result: {
     httpStatus: number;
-    response?: string;
   };
 }
 
@@ -13,7 +12,6 @@ interface ReportDoc extends mongoose.Document {
   website: Types.ObjectId;
   result: {
     httpStatus: number;
-    response?: string;
   };
 }
 
